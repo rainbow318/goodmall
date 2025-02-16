@@ -1,0 +1,48 @@
+syntax="proto3";
+
+package product;
+
+option go_package="/product";
+
+message ListProductsReq{
+    int32 page = 1; // 分页的参数
+    int32 page_size = 2; //每页返回多少商品
+    string categoriy_name = 3; // 用分类名称来获得一个商品列表
+}
+
+message Product{
+    uint32 id = 1; // 商品id
+    string name = 2;
+    string description =3;
+    string picture = 4;
+    float price = 5;
+
+    repeated string categories = 6; // 商品分类名称（因为一个商品可以会属于多个类，所以用repeated string）
+}
+
+message ListProductsResp{
+    repeated Product products = 1;
+}
+
+message GetProductReq{
+    uint32 id = 1; // 请求参数为商品id
+}
+
+message GetProductResp{
+    Product product = 1;
+}
+
+message SearchProductReq{
+    string query = 1;
+}
+
+message SearchProductResp{
+    repeated Product results = 1;
+}
+
+
+service ProductCatalogService{
+    rpc ListProducts (ListProductsReq) returns (ListProductsResp){};
+    rpc GetProduct (GetProductReq) returns (GetProductResp){};
+    rpc SearchProducts(SearchProductReq) returns (SearchProductResp){};
+}

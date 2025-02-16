@@ -1,0 +1,5 @@
+app/*/.env
+.vscode
+.DS_store
+.vscode/settings.json
+tmp/build-errors.log

@@ -51,9 +51,7 @@
                             value="{{ .q }}">
                         <button class="btn btn-outline-success text-nowrap" type="submit">搜索</button>
                     </form>
-                    <div class="ms-3">
-                        <i class="fa-solid fa-cart-shopping fa-xl"></i>
-                    </div>
+                    {{template "cart-num" .}}
 
                     {{if .user_id}}
                     <div class="dropdown">

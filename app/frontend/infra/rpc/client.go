@@ -7,6 +7,7 @@ import (
 	consul "github.com/kitex-contrib/registry-consul"
 	"github.com/suutest/app/frontend/conf"
 	frontendUtils "github.com/suutest/app/frontend/utils"
+	"github.com/suutest/rpc_gen/kitex_gen/cart/cartservice"
 	"github.com/suutest/rpc_gen/kitex_gen/product/productcatalogservice"
 	"github.com/suutest/rpc_gen/kitex_gen/user/userservice"
 )
@@ -14,6 +15,7 @@ import (
 var (
 	UserClient    userservice.Client // 用来存放user服务的RPC客户端的一个实例
 	ProductClient productcatalogservice.Client
+	CartClient    cartservice.Client
 	once          sync.Once // 保证它只会被初始化一次
 )
 
@@ -21,6 +23,7 @@ func Init() {
 	once.Do(func() {
 		initUserClient()
 		initProductClient()
+		initCartClient()
 	})
 }
 
@@ -39,5 +42,15 @@ func initProductClient() {
 	opts = append(opts, client.WithResolver(r))
 
 	ProductClient, err = productcatalogservice.NewClient("product", opts...)
+	frontendUtils.MustHandleError(err)
+}
+
+func initCartClient() {
+	var opts []client.Option
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	opts = append(opts, client.WithResolver(r))
+
+	CartClient, err = cartservice.NewClient("cart", opts...)
 	frontendUtils.MustHandleError(err)
 }

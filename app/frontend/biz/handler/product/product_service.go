@@ -21,14 +21,13 @@ func GetProduct(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// resp := &common.Empty{}
 	resp, err := service.NewGetProductService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
 	}
 
-	c.HTML(consts.StatusOK, "product", resp) // 模版参数是resp
+	c.HTML(consts.StatusOK, "product", utils.WarpResponse(ctx, c, resp)) // 模版参数是resp
 }
 
 // SearchProducts .
@@ -49,5 +48,5 @@ func SearchProducts(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.HTML(consts.StatusOK, "search", resp)
+	c.HTML(consts.StatusOK, "search", utils.WarpResponse(ctx, c, resp))
 }

@@ -4,11 +4,12 @@ package cart
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/suutest/app/frontend/middleware"
 )
 
 func rootMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return []app.HandlerFunc{middleware.Auth()} // 只有登录了才能访问购物车和架构
 }
 
 func _getcartMw() []app.HandlerFunc {

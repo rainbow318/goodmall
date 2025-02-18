@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/suutest/app/cart/biz/dal/mysql"
@@ -21,7 +20,6 @@ func NewAddItemService(ctx context.Context) *AddItemService {
 
 // Run create note info
 func (s *AddItemService) Run(req *cart.AddItemReq) (resp *cart.AddItemResp, err error) {
-	fmt.Println("test")
 	productResp, err := rpc.ProductClient.GetProduct(s.ctx, &rpcproduct.GetProductReq{
 		Id: uint32(req.Item.ProductId),
 	})

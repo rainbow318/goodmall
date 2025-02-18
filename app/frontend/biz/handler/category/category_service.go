@@ -2,14 +2,12 @@ package category
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/suutest/app/frontend/biz/service"
 	"github.com/suutest/app/frontend/biz/utils"
 	category "github.com/suutest/app/frontend/hertz_gen/frontend/category"
-	frontendUtils "github.com/suutest/app/frontend/utils"
 )
 
 // Category .
@@ -29,6 +27,5 @@ func Category(ctx context.Context, c *app.RequestContext) {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
 	}
-	fmt.Println(frontendUtils.GetUserIdFromCtx(ctx))
 	c.HTML(consts.StatusOK, "category", utils.WarpResponse(ctx, c, resp)) // 模版为category，模版参数为resp
 }

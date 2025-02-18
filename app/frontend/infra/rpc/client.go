@@ -8,15 +8,17 @@ import (
 	"github.com/suutest/app/frontend/conf"
 	frontendUtils "github.com/suutest/app/frontend/utils"
 	"github.com/suutest/rpc_gen/kitex_gen/cart/cartservice"
+	"github.com/suutest/rpc_gen/kitex_gen/checkout/checkoutservice"
 	"github.com/suutest/rpc_gen/kitex_gen/product/productcatalogservice"
 	"github.com/suutest/rpc_gen/kitex_gen/user/userservice"
 )
 
 var (
-	UserClient    userservice.Client // 用来存放user服务的RPC客户端的一个实例
-	ProductClient productcatalogservice.Client
-	CartClient    cartservice.Client
-	once          sync.Once // 保证它只会被初始化一次
+	UserClient     userservice.Client // 用来存放user服务的RPC客户端的一个实例
+	ProductClient  productcatalogservice.Client
+	CartClient     cartservice.Client
+	CheckoutClient checkoutservice.Client
+	once           sync.Once // 保证它只会被初始化一次
 )
 
 func Init() {
@@ -24,6 +26,7 @@ func Init() {
 		initUserClient()
 		initProductClient()
 		initCartClient()
+		initCheckoutClient()
 	})
 }
 
@@ -52,5 +55,15 @@ func initCartClient() {
 	opts = append(opts, client.WithResolver(r))
 
 	CartClient, err = cartservice.NewClient("cart", opts...)
+	frontendUtils.MustHandleError(err)
+}
+
+func initCheckoutClient() {
+	var opts []client.Option
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	opts = append(opts, client.WithResolver(r))
+
+	CheckoutClient, err = checkoutservice.NewClient("checkout", opts...)
 	frontendUtils.MustHandleError(err)
 }

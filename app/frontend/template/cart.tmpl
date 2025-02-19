@@ -23,12 +23,12 @@
     <div class="mt-3 mb-5">
         <div class="float-end">
             <div class="m-3 text-danger">总价: ¥{{ .total }}</div>
-            <a href="/checkout" class="btn btn-lg btn-success float-end">Check out</a>
+            <a href="/checkout" class="btn btn-lg btn-success float-end">下单</a>
         </div>
     </div>
     {{else}}
     <h1 class="text-center text-danger">您的购物车是空的</h1>
-    <div class="text-center"><a href="/">Shop Hot Sale</a></div>
+    <div class="text-center"><a href="/">继续购物</a></div>
     {{ end }}
 </div>
 {{ template "footer" . }}

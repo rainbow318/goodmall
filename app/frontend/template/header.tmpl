@@ -64,7 +64,7 @@
                         </div>
 
                         <ul class="dropdown-menu" style="min-width: 100%;">
-                            <li><a class="dropdown-item" href="#">订单记录</a></li>
+                            <li><a class="dropdown-item" href="/order">订单记录</a></li>
                             <li>
                                 <form action="/auth/logout" method="post">
                                     <button class="dropdown-item" type="submit">退出登录</button>
@@ -80,6 +80,12 @@
                 </div>
             </div>
         </nav>
+        {{if .error}}
+        <div class="alert alert-danger text-center" role="alert">{{ .error}}</div>
+        {{end}}
+        {{if .warning}}
+        <div class="alert alert-warning text-center" role="alert">{{ .warning}}</div>
+        {{end}}
     </header>
     <main style="min-height: calc(75vh);">
         <div class="container-sm py-3">

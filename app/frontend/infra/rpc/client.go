@@ -9,6 +9,7 @@ import (
 	frontendUtils "github.com/suutest/app/frontend/utils"
 	"github.com/suutest/rpc_gen/kitex_gen/cart/cartservice"
 	"github.com/suutest/rpc_gen/kitex_gen/checkout/checkoutservice"
+	"github.com/suutest/rpc_gen/kitex_gen/order/orderservice"
 	"github.com/suutest/rpc_gen/kitex_gen/product/productcatalogservice"
 	"github.com/suutest/rpc_gen/kitex_gen/user/userservice"
 )
@@ -18,6 +19,7 @@ var (
 	ProductClient  productcatalogservice.Client
 	CartClient     cartservice.Client
 	CheckoutClient checkoutservice.Client
+	OrderClient    orderservice.Client
 	once           sync.Once // 保证它只会被初始化一次
 )
 
@@ -27,6 +29,7 @@ func Init() {
 		initProductClient()
 		initCartClient()
 		initCheckoutClient()
+		initOrderClient()
 	})
 }
 
@@ -65,5 +68,15 @@ func initCheckoutClient() {
 	opts = append(opts, client.WithResolver(r))
 
 	CheckoutClient, err = checkoutservice.NewClient("checkout", opts...)
+	frontendUtils.MustHandleError(err)
+}
+
+func initOrderClient() {
+	var opts []client.Option
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	opts = append(opts, client.WithResolver(r))
+
+	OrderClient, err = orderservice.NewClient("order", opts...)
 	frontendUtils.MustHandleError(err)
 }

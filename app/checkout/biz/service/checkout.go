@@ -5,10 +5,10 @@ import (
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/cloudwego/kitex/pkg/klog"
-	"github.com/google/uuid"
 	"github.com/suutest/app/checkout/infra/rpc"
 	"github.com/suutest/rpc_gen/kitex_gen/cart"
 	checkout "github.com/suutest/rpc_gen/kitex_gen/checkout"
+	"github.com/suutest/rpc_gen/kitex_gen/order"
 	"github.com/suutest/rpc_gen/kitex_gen/payment"
 	"github.com/suutest/rpc_gen/kitex_gen/product"
 )
@@ -33,7 +33,10 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		return nil, kerrors.NewGRPCBizStatusError(5004001, "cart is empty")
 	}
 
-	var total float32
+	var (
+		total float32
+		oi    []*order.OrderItem
+	)
 	// TODO 这里在循环中使用rpc调用，在真实情况下要避免这样做，因为这样对性能会有很大影响。
 	// 应该在for循环外面统一使用rpc获取数据，然后再遍历计算total值
 	for _, cartItem := range cartResult.Items {
@@ -46,14 +49,38 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		if productResp.Product == nil {
 			continue
 		}
-		total += float32(cartItem.Quantity) * productResp.Product.Price
+		cost := float32(cartItem.Quantity) * productResp.Product.Price
+		total += cost
+		oi = append(oi, &order.OrderItem{
+			Item: &cart.CartItem{
+				ProductId: cartItem.ProductId,
+				Quantity:  cartItem.Quantity,
+			},
+			Cost: cost,
+		})
 	}
 
 	var orderId string
-	// TODO 下面应该调用订单服务。这里暂时先使用一个虚拟订单
-	u, _ := uuid.NewRandom()
-	orderId = u.String()
 
+	orderResp, err := rpc.OrderClient.PlaceOrder(s.ctx, &order.PlaceOrderReq{
+		UserId: req.UserId,
+		Email:  req.Email,
+		Address: &order.Address{
+			StreetAddress: req.Address.StreetAddress,
+			City:          req.Address.City,
+			State:         req.Address.State,
+			Country:       req.Address.City,
+			ZipCode:       req.Address.ZipCode,
+		},
+		Items: oi,
+	})
+	if err != nil {
+		return nil, kerrors.NewGRPCBizStatusError(5004002, err.Error())
+	}
+
+	if orderResp != nil && orderResp.Order != nil {
+		orderId = orderResp.Order.OrderId
+	}
 	payReq := &payment.ChargeReq{
 		Amount:     total,
 		CreditCard: req.CreditCard,

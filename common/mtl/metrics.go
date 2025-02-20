@@ -17,7 +17,7 @@ var Registry *prometheus.Registry // 相当于prometheus sdk提供的一个注�
 // 初始化普罗米欧斯的方法
 // metricsPort 是metrics server监听的地址
 // registryAddr 是注册中心的地址
-func InitMetric(serviceName, metricsPort, registryAddr string) {
+func InitMetric(serviceName, metricsPort, registryAddr string) (registry.Registry, *registry.Info) {
 	Registry = prometheus.NewRegistry()
 	Registry.MustRegister(collectors.NewGoCollector())                                       // 注册go运行时相关的指标
 	Registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})) // 注册进程相关的指标
@@ -39,4 +39,6 @@ func InitMetric(serviceName, metricsPort, registryAddr string) {
 	http.Handle("/metrics", promhttp.HandlerFor(Registry, promhttp.HandlerOpts{}))
 	// 异步起动一个server来让普罗米欧斯拉取指标
 	go http.ListenAndServe(metricsPort, nil)
+
+	return r, registryInfo
 }

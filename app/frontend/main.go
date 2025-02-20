@@ -17,6 +17,7 @@ import (
 	"github.com/hertz-contrib/gzip"
 	"github.com/hertz-contrib/logger/accesslog"
 	hertzlogrus "github.com/hertz-contrib/logger/logrus"
+	hertzprom "github.com/hertz-contrib/monitor-prometheus"
 	"github.com/hertz-contrib/pprof"
 	"github.com/hertz-contrib/sessions"
 	"github.com/hertz-contrib/sessions/redis"
@@ -25,18 +26,31 @@ import (
 	"github.com/suutest/app/frontend/conf"
 	"github.com/suutest/app/frontend/infra/rpc"
 	"github.com/suutest/app/frontend/middleware"
+	frontendutils "github.com/suutest/app/frontend/utils"
+	"github.com/suutest/common/mtl"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+var (
+	ServiceName  = frontendutils.ServiceName
+	MetricsPort  = conf.GetConf().Hertz.MetricsPort
+	RegistryAddr = conf.GetConf().Hertz.RegistryAddr
+)
+
 func main() {
 	_ = godotenv.Load()
+	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
+	defer consul.Deregister(registryInfo) // 这样hertz停止服务时就可以撤掉prometheus上的实例
 	// init dal
 	// dal.Init()
 	rpc.Init()
-
 	address := conf.GetConf().Hertz.Address        // 从配置中获取监听地址
-	h := server.New(server.WithHostPorts(address)) // 创建服务器实例
+	h := server.New(server.WithHostPorts(address), // 创建服务器实例
+		server.WithTracer(hertzprom.NewServerTracer("", "", hertzprom.WithDisableServer(true),
+			hertzprom.WithRegistry(mtl.Registry),
+		)),
+	)
 
 	registerMiddleware(h) // 注册中间件
 

@@ -9,6 +9,7 @@ option go_package="/order";
 service OrderService{
     rpc PlaceOrder(PlaceOrderReq) returns (PlaceOrderResp){}
     rpc ListOrder(ListOrderReq) returns (ListOrderResp){}
+    rpc PlaceOrder2True(PlaceOrder2TrueReq) returns (PlaceOrder2TrueResp){}
 }
 
 message Address{
@@ -33,6 +34,8 @@ message PlaceOrderReq{
     string email=4;
 
     repeated OrderItem items=5;
+
+    uint32 is_charged=6;
 }
 
 message OrderResult{
@@ -59,4 +62,12 @@ message Order{
 
 message ListOrderResp{
     repeated Order orders=1;
+}
+
+message PlaceOrder2TrueReq{
+    string order_id=1;
+}
+
+message PlaceOrder2TrueResp{
+
 }

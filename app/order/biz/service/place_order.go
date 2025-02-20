@@ -68,7 +68,6 @@ func (s *PlaceOrderService) Run(req *order.PlaceOrderReq) (resp *order.PlaceOrde
 				OrderId: orderId.String(),
 			},
 		}
-
 		return nil
 	})
 	return

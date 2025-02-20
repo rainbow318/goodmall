@@ -29,6 +29,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingUnary),
 	),
+	"PlaceOrder2True": kitex.NewMethodInfo(
+		placeOrder2TrueHandler,
+		newPlaceOrder2TrueArgs,
+		newPlaceOrder2TrueResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingUnary),
+	),
 }
 
 var (
@@ -401,6 +408,159 @@ func (p *ListOrderResult) GetResult() interface{} {
 	return p.Success
 }
 
+func placeOrder2TrueHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	switch s := arg.(type) {
+	case *streaming.Args:
+		st := s.Stream
+		req := new(order.PlaceOrder2TrueReq)
+		if err := st.RecvMsg(req); err != nil {
+			return err
+		}
+		resp, err := handler.(order.OrderService).PlaceOrder2True(ctx, req)
+		if err != nil {
+			return err
+		}
+		return st.SendMsg(resp)
+	case *PlaceOrder2TrueArgs:
+		success, err := handler.(order.OrderService).PlaceOrder2True(ctx, s.Req)
+		if err != nil {
+			return err
+		}
+		realResult := result.(*PlaceOrder2TrueResult)
+		realResult.Success = success
+		return nil
+	default:
+		return errInvalidMessageType
+	}
+}
+func newPlaceOrder2TrueArgs() interface{} {
+	return &PlaceOrder2TrueArgs{}
+}
+
+func newPlaceOrder2TrueResult() interface{} {
+	return &PlaceOrder2TrueResult{}
+}
+
+type PlaceOrder2TrueArgs struct {
+	Req *order.PlaceOrder2TrueReq
+}
+
+func (p *PlaceOrder2TrueArgs) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetReq() {
+		p.Req = new(order.PlaceOrder2TrueReq)
+	}
+	return p.Req.FastRead(buf, _type, number)
+}
+
+func (p *PlaceOrder2TrueArgs) FastWrite(buf []byte) (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.FastWrite(buf)
+}
+
+func (p *PlaceOrder2TrueArgs) Size() (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.Size()
+}
+
+func (p *PlaceOrder2TrueArgs) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetReq() {
+		return out, nil
+	}
+	return proto.Marshal(p.Req)
+}
+
+func (p *PlaceOrder2TrueArgs) Unmarshal(in []byte) error {
+	msg := new(order.PlaceOrder2TrueReq)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Req = msg
+	return nil
+}
+
+var PlaceOrder2TrueArgs_Req_DEFAULT *order.PlaceOrder2TrueReq
+
+func (p *PlaceOrder2TrueArgs) GetReq() *order.PlaceOrder2TrueReq {
+	if !p.IsSetReq() {
+		return PlaceOrder2TrueArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+func (p *PlaceOrder2TrueArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *PlaceOrder2TrueArgs) GetFirstArgument() interface{} {
+	return p.Req
+}
+
+type PlaceOrder2TrueResult struct {
+	Success *order.PlaceOrder2TrueResp
+}
+
+var PlaceOrder2TrueResult_Success_DEFAULT *order.PlaceOrder2TrueResp
+
+func (p *PlaceOrder2TrueResult) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetSuccess() {
+		p.Success = new(order.PlaceOrder2TrueResp)
+	}
+	return p.Success.FastRead(buf, _type, number)
+}
+
+func (p *PlaceOrder2TrueResult) FastWrite(buf []byte) (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.FastWrite(buf)
+}
+
+func (p *PlaceOrder2TrueResult) Size() (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.Size()
+}
+
+func (p *PlaceOrder2TrueResult) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetSuccess() {
+		return out, nil
+	}
+	return proto.Marshal(p.Success)
+}
+
+func (p *PlaceOrder2TrueResult) Unmarshal(in []byte) error {
+	msg := new(order.PlaceOrder2TrueResp)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Success = msg
+	return nil
+}
+
+func (p *PlaceOrder2TrueResult) GetSuccess() *order.PlaceOrder2TrueResp {
+	if !p.IsSetSuccess() {
+		return PlaceOrder2TrueResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+func (p *PlaceOrder2TrueResult) SetSuccess(x interface{}) {
+	p.Success = x.(*order.PlaceOrder2TrueResp)
+}
+
+func (p *PlaceOrder2TrueResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PlaceOrder2TrueResult) GetResult() interface{} {
+	return p.Success
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -426,6 +586,16 @@ func (p *kClient) ListOrder(ctx context.Context, Req *order.ListOrderReq) (r *or
 	_args.Req = Req
 	var _result ListOrderResult
 	if err = p.c.Call(ctx, "ListOrder", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) PlaceOrder2True(ctx context.Context, Req *order.PlaceOrder2TrueReq) (r *order.PlaceOrder2TrueResp, err error) {
+	var _args PlaceOrder2TrueArgs
+	_args.Req = Req
+	var _result PlaceOrder2TrueResult
+	if err = p.c.Call(ctx, "PlaceOrder2True", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

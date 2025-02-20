@@ -14,6 +14,8 @@ import (
 	"github.com/suutest/rpc_gen/kitex_gen/order"
 	"github.com/suutest/rpc_gen/kitex_gen/payment"
 	"github.com/suutest/rpc_gen/kitex_gen/product"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -76,7 +78,8 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 			Country:       req.Address.City,
 			ZipCode:       req.Address.ZipCode,
 		},
-		Items: oi,
+		Items:     oi,
+		IsCharged: 0,
 	})
 	if err != nil {
 		return nil, kerrors.NewGRPCBizStatusError(5004002, err.Error())
@@ -91,17 +94,22 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		OrderId:    orderId,
 		UserId:     req.UserId,
 	}
+	paymentResult, err := rpc.PaymentClient.Charge(s.ctx, payReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// charge成功了才将order表里面的is_charged字段设为1
+	_, err = rpc.OrderClient.PlaceOrder2True(s.ctx, &order.PlaceOrder2TrueReq{OrderId: orderId})
+	if err != nil {
+		return nil, err
+	}
 
 	_, err = rpc.CartClient.EmptyCart(s.ctx, &cart.EmptyCartReq{
 		UserId: req.UserId,
 	})
 	if err != nil {
 		klog.Error(err.Error())
-	}
-
-	paymentResult, err := rpc.PaymentClient.Charge(s.ctx, payReq)
-	if err != nil {
-		return nil, err
 	}
 	// 消息中间件 生产者
 	data, _ := proto.Marshal(&rpcemail.EmailReq{
@@ -111,10 +119,12 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		Subject:     "GoodMall: 订单信息",
 		Content:     "您刚在GoodMall新建了一个订单",
 	})
-	msg := &nats.Msg{
+	msg := &nats.Msg{ // 生产信息时需要将链路信息载入到消息的header部分
 		Subject: "email",
 		Data:    data,
+		Header:  make(nats.Header),
 	}
+	otel.GetTextMapPropagator().Inject(s.ctx, propagation.HeaderCarrier(msg.Header))
 	err = mq.Nc.PublishMsg(msg)
 	if err != nil {
 		klog.Error(err)

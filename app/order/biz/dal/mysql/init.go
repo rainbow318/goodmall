@@ -9,6 +9,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 var (
@@ -29,6 +30,12 @@ func Init() {
 		},
 	)
 	if err != nil {
+		panic(err)
+	}
+	if err != nil {
+		panic(err)
+	}
+	if err := DB.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
 		panic(err)
 	}
 	if os.Getenv("GO_ENV") != "online" {

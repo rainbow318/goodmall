@@ -5,55 +5,55 @@
         <form method="post" action="/checkout/waiting">
             <h4 class="mb-3 mt-3">联系方式</h4>
             <label for="email" class="form-label col-12">
-                <input class="form-control" id="email" type="email" placeholder="邮箱" name="email" aria-label="email">
+                <input class="form-control" id="email" type="email" placeholder="邮箱" name="email" aria-label="email" value="t1@example.com">
             </label>
             <h4 class="mb-3 mt-3">配送信息</h4>
             <div class="mb-3 mt-3 col-12 row">
                 <label for="firstname" class="col-md-6 col-sm-12">
-                    <input type="text" id="firstname" class="form-control" placeholder="姓" name="firstname">
+                    <input type="text" id="firstname" class="form-control" placeholder="姓" name="firstname" value="杨">
                 </label>
                 <label for="lastname" class="col-md-6 col-sm-12">
-                    <input type="text" id="lastname" class="form-control" placeholder="名" name="lastname">
+                    <input type="text" id="lastname" class="form-control" placeholder="名" name="lastname" value="颖">
                 </label>
             </div>
             <label for="country" class="mb-3 mt-3 form-label col-12">
-                <input type="text" class="form-control" id="country" name="country" placeholder="国家">
+                <input type="text" class="form-control" id="country" name="country" placeholder="国家" value="中国">
             </label>
             <div class="mb-3 mt-3 col-12 row">
                 <label for="province" class="col-md-6 col-sm-12">
-                    <input type="text" id="province" class="form-control" name="province" placeholder="省">
+                    <input type="text" id="province" class="form-control" name="province" placeholder="省" value="广东省">
                 </label>
                 <label for="city" class="col-md-6 col-sm-12">
-                    <input type="text" id="city" class="form-control" placeholder="市" name="city">
+                    <input type="text" id="city" class="form-control" placeholder="市" name="city" value="广州市">
                 </label>
 
             </div>
             <label for="street" class="mb-3 mt-3 col-12 form-label">
-                <input type="text" class="form-control" placeholder="详细地址（街道）" name="street" id="street">
+                <input type="text" class="form-control" placeholder="详细地址（街道）" name="street" id="street" value="外环东路382号">
             </label>
             <label for="zipcode" class="mb-3 mt-3 form-label col-12">
-                <input type="text" class="form-control" id="zipcode" name="zipcode" placeholder="邮政编码">
+                <input type="text" class="form-control" id="zipcode" name="zipcode" placeholder="邮政编码" value="510006">
             </label>
 
 
             <h4 class="mb-3 mt-3">
                 支付方式
             </h4>
-            <label for="card-num" class="form-label col-12">
-                <input type="text" id="card-num" class="form-control" name="cardNum" placeholder="卡号">
+            <label for="card-number" class="form-label col-12">
+                <input type="text" id="card-number" class="form-control" name="cardNumber" placeholder="卡号" value="4558271077710403">
             </label>
             <div class="mb-3 mt-3 col-12 row">
                 <label for="expiration-year" class="col-md-4 col-sm-12">
                     <input type="text" id="expiration-year" name="expirationYear" class="form-control"
-                        placeholder="过期年份">
+                        placeholder="过期年份" value="2028">
                 </label>
                 <label for="expiration-month" class="col-md-4 col-sm-12">
                     <input type="text" id="expiration-month" name="expirationMonth" class="form-control"
-                        placeholder="过期月份">
+                        placeholder="过期月份" value="9">
                 </label>
 
                 <label for="cvv" class="col-md-4 col-sm-12">
-                    <input type="text" id="cvv" class="form-control" name="cvv" placeholder="cvv" required>
+                    <input type="text" id="cvv" class="form-control" name="cvv" placeholder="cvv" value="998" required>
                 </label>
             </div>
             <div class="form-check">

@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/cloudwego/kitex/client"
-	consul "github.com/kitex-contrib/registry-consul"
 	"github.com/suutest/app/frontend/conf"
 	frontendUtils "github.com/suutest/app/frontend/utils"
+	"github.com/suutest/common/clientsuite"
 	"github.com/suutest/rpc_gen/kitex_gen/cart/cartservice"
 	"github.com/suutest/rpc_gen/kitex_gen/checkout/checkoutservice"
 	"github.com/suutest/rpc_gen/kitex_gen/order/orderservice"
@@ -21,6 +21,9 @@ var (
 	CheckoutClient checkoutservice.Client
 	OrderClient    orderservice.Client
 	once           sync.Once // 保证它只会被初始化一次
+	ServiceName    = frontendUtils.ServiceName
+	RegistryAddr   = conf.GetConf().Hertz.RegistryAddr
+	err            error
 )
 
 func Init() {
@@ -35,48 +38,41 @@ func Init() {
 
 // 具体的初始化用户服务的函数逻辑写在这里
 func initUserClient() {
-	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr) // 使用Consul服务发现机制查找user服务
-	frontendUtils.MustHandleError(err)
-	UserClient, err = userservice.NewClient("user", client.WithResolver(r)) // 使用rpc_gen模块提供的代码来生成一个PRC客户端
+	UserClient, err = userservice.NewClient("user", client.WithSuite(clientsuite.CommonClientSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	})) // 使用rpc_gen模块提供的代码来生成一个PRC客户端
 	frontendUtils.MustHandleError(err)
 }
 
 func initProductClient() {
-	var opts []client.Option
-	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
-	frontendUtils.MustHandleError(err)
-	opts = append(opts, client.WithResolver(r))
-
-	ProductClient, err = productcatalogservice.NewClient("product", opts...)
+	ProductClient, err = productcatalogservice.NewClient("product", client.WithSuite(clientsuite.CommonClientSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 	frontendUtils.MustHandleError(err)
 }
 
 func initCartClient() {
-	var opts []client.Option
-	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
-	frontendUtils.MustHandleError(err)
-	opts = append(opts, client.WithResolver(r))
-
-	CartClient, err = cartservice.NewClient("cart", opts...)
+	CartClient, err = cartservice.NewClient("cart", client.WithSuite(clientsuite.CommonClientSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 	frontendUtils.MustHandleError(err)
 }
 
 func initCheckoutClient() {
-	var opts []client.Option
-	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
-	frontendUtils.MustHandleError(err)
-	opts = append(opts, client.WithResolver(r))
-
-	CheckoutClient, err = checkoutservice.NewClient("checkout", opts...)
+	CheckoutClient, err = checkoutservice.NewClient("checkout", client.WithSuite(clientsuite.CommonClientSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 	frontendUtils.MustHandleError(err)
 }
 
 func initOrderClient() {
-	var opts []client.Option
-	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
-	frontendUtils.MustHandleError(err)
-	opts = append(opts, client.WithResolver(r))
-
-	OrderClient, err = orderservice.NewClient("order", opts...)
+	OrderClient, err = orderservice.NewClient("order", client.WithSuite(clientsuite.CommonClientSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 	frontendUtils.MustHandleError(err)
 }

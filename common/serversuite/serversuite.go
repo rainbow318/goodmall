@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/cloudwego/kitex/server"
 	prometheus "github.com/kitex-contrib/monitor-prometheus"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	consul "github.com/kitex-contrib/registry-consul"
 	"github.com/suutest/common/mtl"
 )
@@ -26,6 +27,7 @@ func (s CommonServerSuite) Options() []server.Option {
 			prometheus.WithDisableServer(true),
 			prometheus.WithRegistry(mtl.Registry)),
 		),
+		server.WithSuite(tracing.NewServerSuite()), // 注册tracing中间件
 	}
 
 	r, err := consul.NewConsulRegister(s.RegistryAddr)

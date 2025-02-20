@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"time"
 
@@ -25,6 +26,8 @@ var (
 func main() {
 	opts := kitexInit()
 	mtl.InitMetric(ServiceName, conf.GetConf().Kitex.MetricsPort, RegistryAddr)
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background()) // 在服务关闭前，将剩余的链路数据都上传完
 	mq.Init()
 	rpc.Init()
 

@@ -22,3 +22,10 @@ func (s *OrderServiceImpl) ListOrder(ctx context.Context, req *order.ListOrderRe
 
 	return resp, err
 }
+
+// PlaceOrder2True implements the OrderServiceImpl interface.
+func (s *OrderServiceImpl) PlaceOrder2True(ctx context.Context, req *order.PlaceOrder2TrueReq) (resp *order.PlaceOrder2TrueResp, err error) {
+	resp, err = service.NewPlaceOrder2TrueService(ctx).Run(req)
+
+	return resp, err
+}

@@ -18,6 +18,7 @@ import (
 	"github.com/hertz-contrib/logger/accesslog"
 	hertzlogrus "github.com/hertz-contrib/logger/logrus"
 	hertzprom "github.com/hertz-contrib/monitor-prometheus"
+	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
 	"github.com/hertz-contrib/sessions"
 	"github.com/hertz-contrib/sessions/redis"
@@ -40,17 +41,23 @@ var (
 
 func main() {
 	_ = godotenv.Load()
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background()) // 在服务关闭前，将剩余的链路数据都上传完
 	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
 	defer consul.Deregister(registryInfo) // 这样hertz停止服务时就可以撤掉prometheus上的实例
 	// init dal
 	// dal.Init()
 	rpc.Init()
-	address := conf.GetConf().Hertz.Address        // 从配置中获取监听地址
+	address := conf.GetConf().Hertz.Address // 从配置中获取监听地址
+
+	tracer, cfg := hertztracing.NewServerTracer()
 	h := server.New(server.WithHostPorts(address), // 创建服务器实例
 		server.WithTracer(hertzprom.NewServerTracer("", "", hertzprom.WithDisableServer(true),
 			hertzprom.WithRegistry(mtl.Registry),
 		)),
+		tracer,
 	)
+	h.Use(hertztracing.ServerMiddleware(cfg)) // 集成hertz的opentelementry中间件
 
 	registerMiddleware(h) // 注册中间件
 

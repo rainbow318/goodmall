@@ -24,3 +24,12 @@ func ListOrder(ctx context.Context, req *order.ListOrderReq, callOptions ...call
 	}
 	return resp, nil
 }
+
+func PlaceOrder2True(ctx context.Context, req *order.PlaceOrder2TrueReq, callOptions ...callopt.Option) (resp *order.PlaceOrder2TrueResp, err error) {
+	resp, err = defaultClient.PlaceOrder2True(ctx, req, callOptions...)
+	if err != nil {
+		klog.CtxErrorf(ctx, "PlaceOrder2True call failed,err =%+v", err)
+		return nil, err
+	}
+	return resp, nil
+}

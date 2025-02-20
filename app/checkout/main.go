@@ -10,6 +10,7 @@ import (
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
 	consul "github.com/kitex-contrib/registry-consul"
 	"github.com/suutest/app/checkout/conf"
+	"github.com/suutest/app/checkout/infra/mq"
 	"github.com/suutest/app/checkout/infra/rpc"
 	"github.com/suutest/rpc_gen/kitex_gen/checkout/checkoutservice"
 	"go.uber.org/zap/zapcore"
@@ -18,6 +19,7 @@ import (
 
 func main() {
 	opts := kitexInit()
+	mq.Init()
 	rpc.Init()
 
 	svr := checkoutservice.NewServer(new(CheckoutServiceImpl), opts...)

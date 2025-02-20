@@ -5,12 +5,16 @@ import (
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/nats-io/nats.go"
+	"github.com/suutest/app/checkout/infra/mq"
 	"github.com/suutest/app/checkout/infra/rpc"
 	"github.com/suutest/rpc_gen/kitex_gen/cart"
 	checkout "github.com/suutest/rpc_gen/kitex_gen/checkout"
+	rpcemail "github.com/suutest/rpc_gen/kitex_gen/email"
 	"github.com/suutest/rpc_gen/kitex_gen/order"
 	"github.com/suutest/rpc_gen/kitex_gen/payment"
 	"github.com/suutest/rpc_gen/kitex_gen/product"
+	"google.golang.org/protobuf/proto"
 )
 
 type CheckoutService struct {
@@ -98,6 +102,22 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 	paymentResult, err := rpc.PaymentClient.Charge(s.ctx, payReq)
 	if err != nil {
 		return nil, err
+	}
+	// 消息中间件 生产者
+	data, _ := proto.Marshal(&rpcemail.EmailReq{
+		From:        "from@example.com",
+		To:          req.Email,
+		ContentType: "text/plain",
+		Subject:     "GoodMall: 订单信息",
+		Content:     "您刚在GoodMall新建了一个订单",
+	})
+	msg := &nats.Msg{
+		Subject: "email",
+		Data:    data,
+	}
+	err = mq.Nc.PublishMsg(msg)
+	if err != nil {
+		klog.Error(err)
 	}
 
 	klog.Info(paymentResult)

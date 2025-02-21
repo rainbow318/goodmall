@@ -1,14 +1,13 @@
 package conf
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/kitex-contrib/config-consul/consul"
 	"github.com/kr/pretty"
-	"gopkg.in/validator.v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -60,24 +59,19 @@ func GetConf() *Config {
 }
 
 func initConf() {
-	prefix := "conf"
-	confFileRelPath := filepath.Join(prefix, filepath.Join(GetEnv(), "conf.yaml"))
-	content, err := ioutil.ReadFile(confFileRelPath)
+	client, err := consul.NewClient(consul.Options{
+		Addr: "localhost:8500", // 配置中心的地址
+	})
 	if err != nil {
 		panic(err)
 	}
-	conf = new(Config)
-	err = yaml.Unmarshal(content, conf)
-	if err != nil {
-		klog.Error("parse yaml error - %v", err)
-		panic(err)
-	}
-	if err := validator.Validate(conf); err != nil {
-		klog.Error("validate config error - %v", err)
-		panic(err)
-	}
-	conf.Env = GetEnv()
-	pretty.Printf("%+v\n", conf)
+	client.RegisterConfigCallback("product/test.yaml", consul.AllocateUniqueID(), func(s string, cp consul.ConfigParser) {
+		err = yaml.Unmarshal([]byte(s), &conf) // 把结果映射到conf上
+		if err != nil {
+			fmt.Println(err)
+		}
+		pretty.Printf("%+v\n", conf)
+	})
 }
 
 func GetEnv() string {

@@ -30,6 +30,7 @@ func (s CommonServerSuite) Options() []server.Option {
 		server.WithSuite(tracing.NewServerSuite()), // 注册tracing中间件
 	}
 
+	// 把自己的服务注册到consul（RegistryAddr是consul的地址）
 	r, err := consul.NewConsulRegister(s.RegistryAddr)
 	if err != nil {
 		klog.Fatal(err)

@@ -40,9 +40,17 @@ message SearchProductResp{
     repeated Product results = 1;
 }
 
+message BatchGetProductsReq{
+    repeated uint32 ids = 1;
+}
+
+message BatchGetProductsResp{
+    map<uint32,Product> products=1;
+}
 
 service ProductCatalogService{
     rpc ListProducts (ListProductsReq) returns (ListProductsResp){};
     rpc GetProduct (GetProductReq) returns (GetProductResp){};
     rpc SearchProducts(SearchProductReq) returns (SearchProductResp){};
+    rpc BatchGetProducts (BatchGetProductsReq) returns (BatchGetProductsResp) {};
 }

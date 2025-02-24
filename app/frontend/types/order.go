@@ -2,6 +2,7 @@ package types
 
 // 订单商品
 type OrderItem struct {
+	ProductId   uint32
 	ProductName string
 	Picture     string
 	Qty         uint32

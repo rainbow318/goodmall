@@ -2,7 +2,6 @@ package email
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/server"
@@ -20,7 +19,6 @@ func ConsumerInit() {
 	// 先订阅一个主题
 	sub, err := mq.Nc.Subscribe("email", func(m *nats.Msg) { // 定义一个消费方法
 		var req email.EmailReq
-		fmt.Printf("%+v\n", m.Data)
 		// 消息格式是protobuf 所以要先反序列化收到的消息
 		err := proto.Unmarshal(m.Data, &req)
 		if err != nil {

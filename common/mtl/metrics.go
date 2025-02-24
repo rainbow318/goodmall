@@ -37,7 +37,7 @@ func InitMetric(serviceName, metricsPort, registryAddr string) (registry.Registr
 	})
 	// 启动metric server
 	http.Handle("/metrics", promhttp.HandlerFor(Registry, promhttp.HandlerOpts{}))
-	// 异步起动一个server来让普罗米欧斯拉取指标
+	// 异步启动一个http服务来让prometheus拉取指标（这个http服务只是数据暴露通道）
 	go http.ListenAndServe(metricsPort, nil)
 
 	return r, registryInfo

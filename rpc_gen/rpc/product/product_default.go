@@ -33,3 +33,12 @@ func SearchProducts(ctx context.Context, req *product.SearchProductReq, callOpti
 	}
 	return resp, nil
 }
+
+func BatchGetProducts(ctx context.Context, req *product.BatchGetProductsReq, callOptions ...callopt.Option) (resp *product.BatchGetProductsResp, err error) {
+	resp, err = defaultClient.BatchGetProducts(ctx, req, callOptions...)
+	if err != nil {
+		klog.CtxErrorf(ctx, "BatchGetProducts call failed,err =%+v", err)
+		return nil, err
+	}
+	return resp, nil
+}

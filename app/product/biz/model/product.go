@@ -48,6 +48,11 @@ func NewProductQuery(ctx context.Context, db *gorm.DB) *ProductQuery {
 	}
 }
 
+func (p ProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
+	err = p.db.WithContext(p.ctx).Debug().Model(&Product{}).Where("id IN ?", productIds).Find(&products).Error // 这里调用WithContext方法主要是便于后面做链路追踪
+	return
+}
+
 type CachedProductQuery struct {
 	productQuery ProductQuery
 	cacheClient  *redis.Client
@@ -101,6 +106,20 @@ func NewCachedProductQuery(ctx context.Context, db *gorm.DB, cachedClient *redis
 		prefix:       "shop",
 	}
 }
+
+// func (p CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
+// 	products, err := p.productQuery.BatchGetByIds(productIds)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var missed_ids []uint32
+// 	for _, i := range productIds {
+// 		cachedKey := fmt.Sprintf("%s_%s_%d", p.prefix, "product_by_id", i)
+// 		cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
+
+// 	}
+// }
 
 // 读写分离：给ProductQuery传读库的db，给ProductMutation传写库的db，就可以实现简单的读写分离
 type ProductMutation struct {

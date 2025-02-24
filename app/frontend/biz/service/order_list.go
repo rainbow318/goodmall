@@ -32,29 +32,31 @@ func (h *OrderListService) Run(req *common.Empty) (resp map[string]any, err erro
 		return nil, err
 	}
 	var orderList []types.Order
+
+	var ids []uint32
+	// 获取需要查询的商品的id
+	for _, v := range orderResp.Orders {
+		for _, i := range v.Items {
+			ids = append(ids, i.Item.ProductId)
+		}
+	}
+
+	products, err := rpc.ProductClient.BatchGetProducts(h.Context, &product.BatchGetProductsReq{
+		Ids: ids,
+	})
+
 	for _, v := range orderResp.Orders {
 		var (
 			total float32
 			items []types.OrderItem
 		)
-		// TODO：生产中不会直接在循环中调用RPC，而是在外面组装prodcutID然后批量获取product信息，再去组装map
 		for _, i := range v.Items {
 			total += i.Cost
-
-			// 商品名，图片路径需要通过rpc调用
-			productResp, err := rpc.ProductClient.GetProduct(h.Context, &product.GetProductReq{
-				Id: i.Item.ProductId,
-			})
-			if err != nil {
-				return nil, err
-			}
-			if productResp == nil || productResp.Product == nil {
-				continue
-			}
-
+			p := products.Products[uint32(i.Item.ProductId)]
 			items = append(items, types.OrderItem{
-				ProductName: productResp.Product.Name,
-				Picture:     productResp.Product.Picture,
+				ProductId:   i.Item.ProductId,
+				ProductName: p.Name,
+				Picture:     p.Picture,
 				Qty:         i.Item.Quantity,
 				Cost:        i.Cost,
 			})

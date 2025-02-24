@@ -13,7 +13,7 @@ require (
 	github.com/kitex-contrib/obs-opentelemetry/logging/logrus v0.0.0-20241120035129-55da83caab1b
 	github.com/kr/pretty v0.3.1
 	github.com/nats-io/nats.go v1.39.0
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.1
 	github.com/suutest/common v0.0.0-00010101000000-000000000000
 	github.com/suutest/rpc_gen v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel v1.25.0

@@ -107,8 +107,55 @@ func NewCachedProductQuery(ctx context.Context, db *gorm.DB, cachedClient *redis
 	}
 }
 
-// func (p CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
-// 	products, err := p.productQuery.BatchGetByIds(productIds)
+func (c CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
+	var missed_ids []uint32
+	for _, i := range productIds {
+		cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", i)
+		cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
+		err = func() error {
+			if err := cachedResult.Err(); err != nil {
+				return err
+			}
+			cachedResultByte, err := cachedResult.Bytes()
+			if err != nil {
+				return err
+			}
+			var p Product
+			err = json.Unmarshal(cachedResultByte, &p)
+			products = append(products, p)
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
+		if err != nil {
+			missed_ids = append(missed_ids, i)
+		}
+	}
+	resp, err := c.productQuery.BatchGetByIds(missed_ids)
+	if err != nil {
+		return products, err
+	}
+	products = append(products, resp...)
+
+	for _, i := range missed_ids {
+		cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", i)
+		for _, p := range resp {
+			if uint32(p.ID) == i {
+				encoded, err := json.Marshal(p)
+				if err != nil {
+					return products, err
+				}
+				_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+				break
+			}
+		}
+	}
+	return
+}
+
+// func (c CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
+// 	products, err = p.productQuery.BatchGetByIds(productIds)
 // 	if err != nil {
 // 		return nil, err
 // 	}

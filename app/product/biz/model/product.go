@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/patrickmn/go-cache"
 	"github.com/redis/go-redis/v9"
+	mycache "github.com/suutest/app/product/biz/cache"
 	"gorm.io/gorm"
 )
 
@@ -55,14 +59,14 @@ func (p ProductQuery) BatchGetByIds(productIds []uint32) (products []Product, er
 
 type CachedProductQuery struct {
 	productQuery ProductQuery
-	cacheClient  *redis.Client
+	redisClient  *redis.Client
+	localCache   *cache.Cache
 	prefix       string
 }
 
-// 带缓存的Get by productId
 func (c CachedProductQuery) GetById(productId int) (product Product, err error) {
 	cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", productId) // 用这个key从redis中获取数据
-	cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
+	cachedResult := c.redisClient.Get(c.productQuery.ctx, cachedKey)
 
 	// 用闭包构建一个错误链，如果中间有任何一个发生错误就往下走
 	err = func() error {
@@ -89,7 +93,51 @@ func (c CachedProductQuery) GetById(productId int) (product Product, err error) 
 		if err != nil {
 			return product, nil
 		}
-		_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+		_ = c.redisClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+	}
+	return
+}
+
+func (c CachedProductQuery) TwoLevelCacheGetById(productId int) (product Product, err error) {
+	cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", productId)
+	// 1.先查本地缓存
+	if item, found := c.localCache.Get(cachedKey); found {
+		return item.(Product), nil
+	}
+
+	klog.Info("Local memory cache miss")
+
+	// 2.本地未命中则查Redis
+	cachedResult := c.redisClient.Get(c.productQuery.ctx, cachedKey)
+
+	err = func() error {
+		if err := cachedResult.Err(); err != nil {
+			return err
+		}
+		cachedResultByte, err := cachedResult.Bytes()
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(cachedResultByte, &product)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil { // 3. 如果上面这些步骤里有错误发生，我们就尝试从数据库中获取数据
+		product, err = c.productQuery.GetById(productId)
+		if err != nil {
+			return Product{}, err
+		}
+		// 如果数据库中的数据获取成功，就把它做序列化然后存在缓存里
+		encoded, err := json.Marshal(product)
+		if err != nil {
+			return product, nil
+		}
+		d := time.Duration(rand.IntN(30)) * time.Second // 带有随机值防止缓存雪崩
+		_ = c.redisClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour+d)
+		// 存在本地缓存
+		c.localCache.Set(cachedKey, product, 5*time.Minute+d)
 	}
 	return
 }
@@ -102,7 +150,8 @@ func (c CachedProductQuery) SearchProduct(q string) (products []*Product, err er
 func NewCachedProductQuery(ctx context.Context, db *gorm.DB, cachedClient *redis.Client) *CachedProductQuery {
 	return &CachedProductQuery{
 		productQuery: *NewProductQuery(ctx, db),
-		cacheClient:  cachedClient,
+		redisClient:  cachedClient,
+		localCache:   mycache.LocalCache,
 		prefix:       "shop",
 	}
 }
@@ -111,7 +160,7 @@ func (c CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Produ
 	var missed_ids []uint32
 	for _, i := range productIds {
 		cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", i)
-		cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
+		cachedResult := c.redisClient.Get(c.productQuery.ctx, cachedKey)
 		err = func() error {
 			if err := cachedResult.Err(); err != nil {
 				return err
@@ -146,27 +195,13 @@ func (c CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Produ
 				if err != nil {
 					return products, err
 				}
-				_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+				_ = c.redisClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
 				break
 			}
 		}
 	}
 	return
 }
-
-// func (c CachedProductQuery) BatchGetByIds(productIds []uint32) (products []Product, err error) {
-// 	products, err = p.productQuery.BatchGetByIds(productIds)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var missed_ids []uint32
-// 	for _, i := range productIds {
-// 		cachedKey := fmt.Sprintf("%s_%s_%d", p.prefix, "product_by_id", i)
-// 		cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
-
-// 	}
-// }
 
 // 读写分离：给ProductQuery传读库的db，给ProductMutation传写库的db，就可以实现简单的读写分离
 type ProductMutation struct {

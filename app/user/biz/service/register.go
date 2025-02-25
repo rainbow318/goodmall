@@ -6,6 +6,7 @@ import (
 
 	"github.com/suutest/app/user/biz/dal/mysql"
 	"github.com/suutest/app/user/biz/model"
+	"github.com/suutest/app/user/infra/filter"
 	user "github.com/suutest/rpc_gen/kitex_gen/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,6 +24,9 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 	if req.Email == "" || req.Password == "" || req.PasswordConfirm == "" {
 		return nil, errors.New("email or password is empty")
 	}
+	if filter.Filter.TestString(req.Email) {
+		return nil, errors.New("user is exist")
+	}
 	if req.Password != req.PasswordConfirm {
 		return nil, errors.New("password not match")
 	}
@@ -39,5 +43,6 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 	if err != nil {
 		return nil, err
 	}
+	filter.Filter.AddString(req.Email)
 	return &user.RegisterResp{UserId: int32(newUser.ID)}, nil
 }

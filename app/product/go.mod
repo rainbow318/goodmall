@@ -9,11 +9,13 @@ replace (
 )
 
 require (
+	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/cloudwego/kitex v0.12.1
 	github.com/joho/godotenv v1.5.1
 	github.com/kitex-contrib/config-consul v0.1.4
 	github.com/kitex-contrib/obs-opentelemetry/logging/logrus v0.0.0-20241120035129-55da83caab1b
 	github.com/kr/pretty v0.3.1
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/suutest/common v0.0.0-00010101000000-000000000000
 	github.com/suutest/rpc_gen v0.0.0-00010101000000-000000000000
@@ -28,6 +30,7 @@ require (
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	github.com/bufbuild/protocompile v0.14.1 // indirect
 	github.com/bytedance/gopkg v0.1.1 // indirect
 	github.com/bytedance/sonic v1.12.8 // indirect

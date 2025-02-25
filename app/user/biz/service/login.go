@@ -6,6 +6,7 @@ import (
 
 	"github.com/suutest/app/user/biz/dal/mysql"
 	"github.com/suutest/app/user/biz/model"
+	"github.com/suutest/app/user/infra/filter"
 	user "github.com/suutest/rpc_gen/kitex_gen/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,10 +20,11 @@ func NewLoginService(ctx context.Context) *LoginService {
 
 // Run create note info
 func (s *LoginService) Run(req *user.LoginReq) (resp *user.LoginResp, err error) {
-	// Finish your business logic.
-	// 业务逻辑：查找账号密码
 	if req.Email == "" || req.Password == "" {
 		return nil, errors.New("email of password is empty")
+	}
+	if !filter.Filter.TestString(req.Email) {
+		return nil, errors.New("user is not exist")
 	}
 	row, err := model.GetByEmail(s.ctx, mysql.DB, req.Email)
 	if err != nil {

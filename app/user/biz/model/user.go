@@ -25,3 +25,8 @@ func GetByEmail(ctx context.Context, db *gorm.DB, email string) (*User, error) {
 	err := db.WithContext(ctx).Where("email=?", email).First(&user).Error
 	return &user, err
 }
+
+func GetAllUserEmail(ctx context.Context, db *gorm.DB) (users []*User, err error) {
+	err = db.WithContext(ctx).Model(&User{}).Find(&users).Error
+	return
+}

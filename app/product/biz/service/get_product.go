@@ -24,7 +24,8 @@ func (s *GetProductService) Run(req *product.GetProductReq) (resp *product.GetPr
 	}
 	// productQuery := model.NewProductQuery(s.ctx, mysql.DB)
 	productQuery := model.NewCachedProductQuery(s.ctx, mysql.DB, redis.RedisClient)
-	p, err := productQuery.GetById(int(req.Id))
+	// p, err := productQuery.GetById(int(req.Id))
+	p, err := productQuery.TwoLevelCacheGetById(int(req.Id))
 	if err != nil {
 		return nil, err
 	}

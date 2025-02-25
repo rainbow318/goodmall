@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/kitex/server"
 	"github.com/joho/godotenv"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
+	mycache "github.com/suutest/app/product/biz/cache"
 	"github.com/suutest/app/product/biz/dal"
 	"github.com/suutest/app/product/conf"
 	"github.com/suutest/common/mtl"
@@ -29,6 +30,7 @@ func main() {
 	defer p.Shutdown(context.Background())                                      // 在服务关闭前，将剩余的链路数据都上传完
 	mtl.InitMetric(ServiceName, conf.GetConf().Kitex.MetricsPort, RegistryAddr) // 这里的mtl初始化要在dal和rpc之前
 	dal.Init()
+	mycache.InitLocalCache()
 	opts := kitexInit()
 
 	svr := productcatalogservice.NewServer(new(ProductCatalogServiceImpl), opts...)

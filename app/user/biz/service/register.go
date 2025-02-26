@@ -24,7 +24,7 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 	if req.Email == "" || req.Password == "" || req.PasswordConfirm == "" {
 		return nil, errors.New("email or password is empty")
 	}
-	if filter.Filter.TestString(req.Email) {
+	if filter.FilterState && filter.Filter.TestString(req.Email) {
 		return nil, errors.New("user is exist")
 	}
 	if req.Password != req.PasswordConfirm {

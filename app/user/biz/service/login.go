@@ -23,7 +23,7 @@ func (s *LoginService) Run(req *user.LoginReq) (resp *user.LoginResp, err error)
 	if req.Email == "" || req.Password == "" {
 		return nil, errors.New("email of password is empty")
 	}
-	if !filter.Filter.TestString(req.Email) {
+	if filter.FilterState && !filter.Filter.TestString(req.Email) {
 		return nil, errors.New("user is not exist")
 	}
 	row, err := model.GetByEmail(s.ctx, mysql.DB, req.Email)

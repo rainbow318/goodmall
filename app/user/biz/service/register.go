@@ -43,6 +43,8 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 	if err != nil {
 		return nil, err
 	}
+	filter.FilterMutex.Lock()
+	defer filter.FilterMutex.Unlock()
 	filter.Filter.AddString(req.Email)
 	return &user.RegisterResp{UserId: int32(newUser.ID)}, nil
 }

@@ -7,7 +7,7 @@ var (
 	err error
 )
 
-func Init() {
+func InitNATS() {
 	Nc, err = nats.Connect(nats.DefaultURL)
 	if err != nil {
 		panic(err)

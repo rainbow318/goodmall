@@ -10,6 +10,7 @@ service OrderService{
     rpc PlaceOrder(PlaceOrderReq) returns (PlaceOrderResp){}
     rpc ListOrder(ListOrderReq) returns (ListOrderResp){}
     rpc PlaceOrder2True(PlaceOrder2TrueReq) returns (PlaceOrder2TrueResp){}
+    rpc GetOrderStatus(GetOrderStatusReq) returns (GetOrderStatusResp){}
 }
 
 message Address{
@@ -70,4 +71,11 @@ message PlaceOrder2TrueReq{
 
 message PlaceOrder2TrueResp{
 
+}
+
+message GetOrderStatusReq{
+    string order_id=1;
+}
+message GetOrderStatusResp{
+    bool status=1;
 }

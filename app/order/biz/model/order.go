@@ -43,3 +43,12 @@ func SetIsCharged2True(ctx context.Context, db *gorm.DB, order_id string) error 
 	err := db.WithContext(ctx).Model(&Order{}).Where("order_id=?", order_id).Update("is_charged", 1).Error
 	return err
 }
+
+func GetOrderStatus(ctx context.Context, db *gorm.DB, order_id string) (bool, error) {
+	var tmp Order
+	err := db.WithContext(ctx).Model(&Order{}).Where("order_id=?", order_id).First(&tmp).Error
+	if err != nil {
+		return false, err
+	}
+	return tmp.IsCharged, nil
+}

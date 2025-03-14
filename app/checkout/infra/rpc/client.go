@@ -10,6 +10,7 @@ import (
 	"github.com/suutest/rpc_gen/kitex_gen/order/orderservice"
 	"github.com/suutest/rpc_gen/kitex_gen/payment/paymentservice"
 	"github.com/suutest/rpc_gen/kitex_gen/product/productcatalogservice"
+	"github.com/suutest/rpc_gen/kitex_gen/stock/stockservice"
 )
 
 var (
@@ -17,6 +18,7 @@ var (
 	PaymentClient paymentservice.Client
 	ProductClient productcatalogservice.Client
 	OrderClient   orderservice.Client
+	StockClient   stockservice.Client
 	once          sync.Once
 	ServiceName   = conf.GetConf().Kitex.Service
 	RegistryAddr  = conf.GetConf().Registry.RegistryAddress[0]
@@ -29,6 +31,7 @@ func Init() {
 		initProductClient()
 		initPaymentClient()
 		initOrderClient()
+		initStockClient()
 	})
 }
 
@@ -79,6 +82,19 @@ func initOrderClient() {
 		}),
 	}
 	OrderClient, err = orderservice.NewClient("order", opts...)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func initStockClient() {
+	opts := []client.Option{
+		client.WithSuite(clientsuite.CommonClientSuite{
+			CurrentServiceName: ServiceName,
+			RegistryAddr:       RegistryAddr,
+		}),
+	}
+	StockClient, err = stockservice.NewClient("stock", opts...)
 	if err != nil {
 		panic(err)
 	}

@@ -33,3 +33,12 @@ func PlaceOrder2True(ctx context.Context, req *order.PlaceOrder2TrueReq, callOpt
 	}
 	return resp, nil
 }
+
+func GetOrderStatus(ctx context.Context, req *order.GetOrderStatusReq, callOptions ...callopt.Option) (resp *order.GetOrderStatusResp, err error) {
+	resp, err = defaultClient.GetOrderStatus(ctx, req, callOptions...)
+	if err != nil {
+		klog.CtxErrorf(ctx, "GetOrderStatus call failed,err =%+v", err)
+		return nil, err
+	}
+	return resp, nil
+}

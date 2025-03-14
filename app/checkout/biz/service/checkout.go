@@ -14,6 +14,7 @@ import (
 	"github.com/suutest/rpc_gen/kitex_gen/order"
 	"github.com/suutest/rpc_gen/kitex_gen/payment"
 	"github.com/suutest/rpc_gen/kitex_gen/product"
+	"github.com/suutest/rpc_gen/kitex_gen/stock"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/protobuf/proto"
@@ -88,6 +89,24 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 	if orderResp != nil && orderResp.Order != nil {
 		orderId = orderResp.Order.OrderId
 	}
+
+	// 预扣减库存
+	var stocks []*stock.Stock
+	for _, cartItem := range cartResult.Items {
+		stocks = append(stocks, &stock.Stock{
+			ProductId: cartItem.ProductId,
+			Quantity:  cartItem.Quantity,
+		})
+	}
+	occupyResp, err := rpc.StockClient.OccupyStocks(s.ctx, &stock.OccupyStocksReq{
+		Stocks:  stocks,
+		OrderId: orderId,
+	})
+	if err != nil || !occupyResp.Success {
+		klog.Errorf("occupy stock fail")
+		return nil, err
+	}
+
 	payReq := &payment.ChargeReq{
 		Amount:     total,
 		CreditCard: req.CreditCard,
@@ -95,11 +114,31 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		UserId:     req.UserId,
 	}
 	paymentResult, err := rpc.PaymentClient.Charge(s.ctx, payReq)
+	// 如果支付失败，则恢复库存
 	if err != nil {
+		klog.Errorf("charge fail:%s", err.Error())
+		// 恢复库存
+		recoverResp, err := rpc.StockClient.OccupyStocks(s.ctx, &stock.OccupyStocksReq{
+			Stocks:  stocks,
+			OrderId: orderId,
+		})
+		if err != nil || !recoverResp.Success {
+			klog.Errorf("recover stock fail:%s", err.Error())
+			return nil, err
+		}
+		return nil, err
+	}
+	// 真正扣库存
+	deductStockResp, err := rpc.StockClient.DeductStocks(s.ctx, &stock.DeductStocksReq{
+		Stocks:  stocks,
+		OrderId: orderId,
+	})
+	if err != nil || !deductStockResp.Success {
+		klog.Errorf("deduct stock fail:%s", err.Error())
 		return nil, err
 	}
 
-	// charge成功了才将order表里面的is_charged字段设为1
+	// 更新订单状态：order表中is_charged字段设为1
 	_, err = rpc.OrderClient.PlaceOrder2True(s.ctx, &order.PlaceOrder2TrueReq{OrderId: orderId})
 	if err != nil {
 		return nil, err

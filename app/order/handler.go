@@ -29,3 +29,10 @@ func (s *OrderServiceImpl) PlaceOrder2True(ctx context.Context, req *order.Place
 
 	return resp, err
 }
+
+// GetOrderStatus implements the OrderServiceImpl interface.
+func (s *OrderServiceImpl) GetOrderStatus(ctx context.Context, req *order.GetOrderStatusReq) (resp *order.GetOrderStatusResp, err error) {
+	resp, err = service.NewGetOrderStatusService(ctx).Run(req)
+
+	return resp, err
+}

@@ -45,3 +45,45 @@ gen-order:
 gen-email:
 	@cd rpc_gen && cwgo client --type RPC --service email --module ${ROOT_MOD}/rpc_gen -I ../idl --idl ../idl/email.proto
 	@cd app/email && cwgo server --type RPC --service email --module ${ROOT_MOD}/app/email --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen" -I ../../idl --idl ../../idl/email.proto
+
+.PHONY: gen-stock
+gen-stock:
+	@cd rpc_gen && cwgo client --type RPC --service stock --module ${ROOT_MOD}/rpc_gen -I ../idl --idl ../idl/stock.proto
+	@cd app/stock && cwgo server --type RPC --service stock --module ${ROOT_MOD}/app/stock --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen" -I ../../idl --idl ../../idl/stock.proto
+
+
+.PHONY: go-user
+go-user:
+	@cd app/user && go mod tidy && go run .
+
+.PHONY: go-cart
+go-cart:
+	@cd app/cart && go mod tidy && go run .
+
+.PHONY: go-product
+go-product:
+	@cd app/product && go mod tidy && go run .
+
+.PHONY: go-checkout
+go-checkout:
+	@cd app/checkout && go mod tidy && go run .
+
+.PHONY: go-order
+go-order:
+	@cd app/order && go mod tidy && go run .
+
+.PHONY: go-email
+go-email:
+	@cd app/email && go mod tidy && go run .
+
+.PHONY: go-frontend
+go-frontend:
+	@cd app/frontend && go mod tidy && go run .
+
+.PHONY: go-payment
+go-payment:
+	@cd app/payment && go mod tidy && go run .
+
+.PHONY: go-stock
+go-stock:
+	@cd app/stock && go mod tidy && go run .

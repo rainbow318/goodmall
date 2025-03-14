@@ -15,6 +15,7 @@ type RPCClient interface {
 	PlaceOrder(ctx context.Context, Req *order.PlaceOrderReq, callOptions ...callopt.Option) (r *order.PlaceOrderResp, err error)
 	ListOrder(ctx context.Context, Req *order.ListOrderReq, callOptions ...callopt.Option) (r *order.ListOrderResp, err error)
 	PlaceOrder2True(ctx context.Context, Req *order.PlaceOrder2TrueReq, callOptions ...callopt.Option) (r *order.PlaceOrder2TrueResp, err error)
+	GetOrderStatus(ctx context.Context, Req *order.GetOrderStatusReq, callOptions ...callopt.Option) (r *order.GetOrderStatusResp, err error)
 }
 
 func NewRPCClient(dstService string, opts ...client.Option) (RPCClient, error) {
@@ -53,4 +54,8 @@ func (c *clientImpl) ListOrder(ctx context.Context, Req *order.ListOrderReq, cal
 
 func (c *clientImpl) PlaceOrder2True(ctx context.Context, Req *order.PlaceOrder2TrueReq, callOptions ...callopt.Option) (r *order.PlaceOrder2TrueResp, err error) {
 	return c.kitexClient.PlaceOrder2True(ctx, Req, callOptions...)
+}
+
+func (c *clientImpl) GetOrderStatus(ctx context.Context, Req *order.GetOrderStatusReq, callOptions ...callopt.Option) (r *order.GetOrderStatusResp, err error) {
+	return c.kitexClient.GetOrderStatus(ctx, Req, callOptions...)
 }

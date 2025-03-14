@@ -55,18 +55,18 @@ func initUserClient() {
 func initProductClient() {
 	// 给商品服务增加熔断策略
 	cbs := circuitbreak.NewCBSuite(func(ri rpcinfo.RPCInfo) string { // 构建服务力度
-		return circuitbreak.RPCInfo2Key(ri)
+		return circuitbreak.RPCInfo2Key(ri) // 创建一个基于RPC信息的熔断器
 	})
 	cbs.UpdateServiceCBConfig("frontend/product/GetProduct",
-		circuitbreak.CBConfig{Enable: true, ErrRate: 0.5, MinSample: 2},
+		circuitbreak.CBConfig{Enable: true, ErrRate: 0.5, MinSample: 2}, // 错误率阈值0.5；最小样本数量2，只有在至少2次调用后才开始计算错误率
 	)
 	consulClient, err := consul.NewClient(consul.Options{})
 	ProductClient, err = productcatalogservice.NewClient("product", client.WithSuite(clientsuite.CommonClientSuite{
 		CurrentServiceName: ServiceName,
 		RegistryAddr:       RegistryAddr,
-	}), client.WithCircuitBreaker(cbs), client.WithFallback(
+	}), client.WithCircuitBreaker(cbs), client.WithFallback( // 添加降级处理，确保在product服务不可用时，能够提供默认的数据
 		fallback.NewFallbackPolicy( // 如果product服务down了的话，就会进入这个fallback，并展示我们在下面预定义的商品
-			fallback.UnwrapHelper(
+			fallback.UnwrapHelper( // 包装降级处理函数
 				func(ctx context.Context, req, resp interface{}, err error) (fbResp interface{}, fbErr error) {
 					if err == nil {
 						return resp, nil
@@ -89,7 +89,7 @@ func initProductClient() {
 				}),
 		),
 	),
-		client.WithSuite(consulclient.NewSuite("product", ServiceName, consulClient)),
+		client.WithSuite(consulclient.NewSuite("product", ServiceName, consulClient)), // 这里的ProductClient通过consul找到product服务
 	)
 	frontendUtils.MustHandleError(err)
 }

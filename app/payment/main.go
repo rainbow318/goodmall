@@ -11,6 +11,7 @@ import (
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
 	"github.com/suutest/app/payment/biz/dal"
 	"github.com/suutest/app/payment/conf"
+	"github.com/suutest/app/payment/infra/rpc"
 	"github.com/suutest/common/mtl"
 	"github.com/suutest/common/serversuite"
 	"github.com/suutest/rpc_gen/kitex_gen/payment/paymentservice"
@@ -30,6 +31,7 @@ func main() {
 	mtl.InitMetric(ServiceName, conf.GetConf().Kitex.MetricsPort, RegistryAddr) // 这里的mtl初始化要在dal和rpc之前
 	dal.Init()
 	opts := kitexInit()
+	rpc.Init()
 
 	svr := paymentservice.NewServer(new(PaymentServiceImpl), opts...)
 

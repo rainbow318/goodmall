@@ -28,6 +28,8 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
+    #networks:
+    #  - monitor-net
   grafana:
     image: grafana/grafana:latest
     environment:
@@ -36,6 +38,8 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     ports:
       - "3000:3000"
+    #networks:
+    #  - monitor-net
   # Jaeger
   jaeger-all-in-one:
     container_name: jaeger-all-in-one
@@ -59,3 +63,14 @@ services:
       - ./deploy/config/promtail.yml:/etc/promtail/config.yml
       - ./app/frontend/log:/logs/frontend
     command: -config.file=/etc/promtail/config.yml
+  #node_exporter:
+  #  image: quay.io/prometheus/node-exporter:latest
+  #  command: --web.listen-address=0.0.0.0:9100
+  #  ports:
+  #    - "9100:9100"
+  #  networks:
+  #    - monitor-net
+
+#networks:
+#  monitor-net:
+#    driver: bridge

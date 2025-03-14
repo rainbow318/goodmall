@@ -8,7 +8,7 @@ import (
 )
 
 func rootMw() []app.HandlerFunc {
-	return []app.HandlerFunc{middleware.Auth()}
+	return []app.HandlerFunc{middleware.Auth()} // 在根路径上应用中间件，使得这些中间件会自动应用到所有子路由（例如/checkout/result,/checkout/waiting都会继承这个中间件）
 }
 
 func _checkoutMw() []app.HandlerFunc {

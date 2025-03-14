@@ -1,0 +1,50 @@
+syntax="proto3";
+
+package stock;
+
+option go_package="/stock";
+
+service StockService{
+    rpc BatchGetStocks(GetStocksReq) returns (GetStocksResp){}
+    rpc DeductStocks(DeductStocksReq) returns (DeductStocksResp){}
+    rpc OccupyStocks(OccupyStocksReq) returns (OccupyStocksResp){}
+    rpc RecoverStocks(RecoverStocksReq) returns (RecoverStocksResp){}
+}
+
+message GetStocksReq{
+    repeated uint32 product_ids=1;
+}
+
+message Stock{
+    uint32 product_id=1;
+    uint32 quantity=2;
+}
+message GetStocksResp{
+    map<uint32,Stock> stocks=1;
+}
+
+message DeductStocksReq{
+    repeated Stock stocks=1; // 需要扣减的商品列表
+    string order_id=2;
+}
+
+message DeductStocksResp{
+    bool success=1;
+}
+
+message OccupyStocksReq{
+    repeated Stock stocks=1; // 需要扣减的商品列表
+    string order_id=2;
+}
+
+message OccupyStocksResp{
+    bool success=1;
+}
+
+message RecoverStocksReq{
+    repeated Stock stocks=1;
+    string order_id=2;
+}
+message RecoverStocksResp{
+    bool success=1;
+}

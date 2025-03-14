@@ -32,10 +32,10 @@ func (h *LoginService) Run(req *auth.LoginReq) (redirect string, err error) {
 	if err != nil {
 		return "", err
 	}
-
+	// 获取与当前请求关联的session（由中间件自动管理）
 	session := sessions.Default(h.RequestContext)
-	session.Set("user_id", resp.UserId) // 将user_id保存到当前会话中。此时并没有根据传入的 req 来进行验证或查找数据库，直接将user_id设置为 1。
-	err = session.Save()                // 将上面设置的 user_id 存储到会话中，这样在随后的请求中，服务器可以通过会话中的 user_id 来识别用户的身份
+	session.Set("user_id", resp.UserId) // 在已存在的session中存储用户凭证
+	err = session.Save()                // 将修改持久化到redis
 	if err != nil {
 		return "", err
 	}

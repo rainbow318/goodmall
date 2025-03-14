@@ -2,6 +2,7 @@ package filter
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/bits-and-blooms/bloom/v3"
@@ -13,6 +14,7 @@ import (
 var (
 	Filter      *bloom.BloomFilter
 	FilterState bool
+	FilterMutex sync.Mutex // 所有导入该包的协程共享此实例
 )
 
 func InitFilter() {
@@ -34,6 +36,8 @@ func InitFilter() {
 		FilterState = false
 		return
 	}
+	FilterMutex.Lock()
+	defer FilterMutex.Unlock()
 	for _, u := range users {
 		Filter.AddString(u.Email)
 	}
